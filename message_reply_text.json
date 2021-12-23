@@ -1,0 +1,27 @@
+{
+	"caption_entities": [],
+	"text": "Hola",
+	"entities": [],
+	"message_id": 47,
+	"photo": [],
+	"group_chat_created": False,
+	"supergroup_chat_created": False,
+	"channel_chat_created": False,
+	"chat": {
+		"id": 2046332929,
+		"first_name": "Thomas",
+		"type": "private",
+		"last_name": "Moreno"
+	},
+	"date": 1640210387,
+	"delete_chat_photo": False,
+	"new_chat_photo": [],
+	"new_chat_members": [],
+	"from": {
+		"id": 2046332929,
+		"last_name": "Moreno",
+		"is_bot": False,
+		"language_code": "es",
+		"first_name": "Thomas"
+	}
+}
