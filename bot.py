@@ -1,7 +1,5 @@
-from typing import Pattern
 from telegram.ext import Updater, CommandHandler, ConversationHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram import ChatAction, InlineKeyboardMarkup, InlineKeyboardButton
-
 
 import os
 import uuid
@@ -13,6 +11,7 @@ TOKEN = os.environ['API_TOKEN_TESTBOT']
 
 WAIT_FOR_TEXT = 0
 WAIT_FOR_URL = 1
+WAIT_FOR_HOST = 2
 
 
 def start(update, context):
@@ -31,11 +30,17 @@ def start(update, context):
         callback_data='short'
     )
 
+    btnUpServ = InlineKeyboardButton(
+        text='Estado Servidor',
+        callback_data='upserv'
+    )
+
     update.message.reply_text(
         text='Estas son las opciones disponibles, selecciona una de ellas.',
         reply_markup=InlineKeyboardMarkup([
             [btnGit, btnQr],
-            [btnShort]
+            [btnShort],
+            [btnUpServ]
         ])
     )
 
@@ -64,6 +69,17 @@ def short_callback_handler(update, context):
     return WAIT_FOR_URL
 
 
+def upserv_command_handler(update, context):
+    update.message.reply_text('Que Servidor quieres revisar?')
+    return WAIT_FOR_HOST
+
+
+def upserv_callback_handler(update, context):
+    query = update.callback_query
+    query.answer()
+    query.edit_message_text('Que Servidor quieres revisar?')
+    return WAIT_FOR_HOST
+
 def input_reply_text(update):
     text = update.message.text
     user = update.message.chat
@@ -76,6 +92,12 @@ def genetate_qr(text):
     img = qr.make(text)
     img.save(filename)
     return filename
+
+
+def hostup(hostname):
+    # print(str(os.geteuid()))
+    response = os.system("ping -c 1 " + hostname)
+    return "Servidor en linea" if (response == 0) else "Servidor fuera de linea"
 
 
 def send_photo(filename, chat):
@@ -114,6 +136,17 @@ def input_url(update, context):
             chat.first_name), chat)
 
 
+def input_host(update, context):
+    chat = update.message.chat
+    hostname = update.message.text
+    # try:
+    send_text(hostup(hostname), chat)
+    return ConversationHandler.END
+    # except:
+        # send_text("Creo {}, que eso no es una URL valida.".format(
+        #     chat.first_name), chat)
+
+
 def input_text(update, context):
     # input_reply_text(update)
 
@@ -139,6 +172,7 @@ if __name__ == '__main__':
                 CommandHandler('start', start),
                 CommandHandler('qr',  qr_command_handler),
                 CommandHandler('short',  short_command_handler),
+                CommandHandler('upserv',  upserv_command_handler),
                 CallbackQueryHandler(
                     pattern='qr',
                     callback=qr_callback_handler
@@ -146,6 +180,10 @@ if __name__ == '__main__':
                 CallbackQueryHandler(
                     pattern='short',
                     callback=short_callback_handler
+                ),
+                CallbackQueryHandler(
+                    pattern='upserv',
+                    callback=upserv_callback_handler
                 )
 
             ],
@@ -155,6 +193,9 @@ if __name__ == '__main__':
                 ],
                 WAIT_FOR_URL: [
                     MessageHandler(Filters.text, input_url)
+                ],
+                WAIT_FOR_HOST: [
+                    MessageHandler(Filters.text, input_host)
                 ]
             },
             fallbacks=[]
